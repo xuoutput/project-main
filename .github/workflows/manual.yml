@@ -1,0 +1,63 @@
+name: test-step
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_locale:
+        description: 'deploy locale zh or en'
+        required: false
+        type: choice
+        options:
+          - zh
+          - en
+      deploy_port:
+        description: 'deploy dev port, zh default 80, en default 8000'
+        required: true
+        default: '80'
+      tag:
+        description: 'MO website Image Tag'
+        required: true
+        default: '0.1.0'
+
+jobs:
+  build_zh:
+    if: ${{ inputs.deploy_locale }} == 'zh' 
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v3
+  build_en_fronted:
+    if: ${{ inputs.deploy_locale }} == 'en' 
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v3
+  build_en_backend:
+    if: ${{ inputs.deploy_locale }} == 'en' 
+    runs-on: ubuntu-latest
+    steps:
+      - id: checkout
+        uses: actions/checkout@v3
+  deploy_zh:
+    if: ${{ inputs.deploy_locale }} == 'zh' 
+    needs: build_zh
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy on dev-server zh
+        if: ${{ inputs.deploy_locale }} == 'zh' 
+        uses: appleboy/ssh-action@master
+        with:
+          script: |
+            echo "zh"
+  deploy_en:
+    if: ${{ inputs.deploy_locale }} == 'en' 
+    needs: [build_en_fronted, build_en_backend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy on dev-server en
+        if: ${{ inputs.deploy_locale }} == 'en' 
+        uses: appleboy/ssh-action@master
+        with:
+          script: |
+            echo "en"
+      - id: checkout
+        uses: actions/checkout@v3
